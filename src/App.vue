@@ -36,6 +36,9 @@
           </TributeEditor>
         </div>
       </div>
+      <!-- <TagCloud
+        :tags="valueOptions"
+      /> -->
       <hr>
       <div>
         <button
@@ -86,11 +89,13 @@
 
 <script>
 import TributeEditor from './components/TributeEditor.vue';
+// import TagCloud from './components/TagCloud.vue';
 
 export default {
   name: 'App',
   components: {
     TributeEditor,
+    // TagCloud,
   },
   data: () => ({
     output: '',
@@ -130,9 +135,30 @@ export default {
     ],
   }),
   methods: {
-    onEnter(event) {
-      event.preventDefault()
-      document.execCommand('insertLineBreak')
+    handleTagClick(e) {
+      // console.log(tag);
+      const instance = this.$refs['editor'].getTributeInstance();
+      // instance.showMenuForCollection(this.$refs['editor'].$el,1)
+      const item = {
+        index: 0,
+        scoere: 0,
+        string: 'celkem',
+        original: {
+        key: 'total',
+        value: 'celkem',
+        preview: '5 000 Kč'
+        }
+       };
+      const content = instance.collection[0].selectTemplate(item);
+      instance.replaceText(content, e, item)
+
+
+      // instance.selectItemAtIndex(1, e)
+      // instance.insertTextAtCursor('asdasd')
+    },
+    onEnter() {
+      // event.preventDefault()
+      // document.execCommand('insertLineBreak')
     },
     getData() {
       this.output = this.$refs['editor'].dataFromTribute();

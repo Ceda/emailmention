@@ -1,6 +1,7 @@
 <script>
 import Tribute from 'tributejs';
 const tagAttributes = 'contenteditable="false" class="el-tag el-tag--small el-tag--light"';
+const deleteIcon = '<i class="el-icon-close el-tag__close el-icon-close--small"></i>';
 
 export default {
   name: 'TributeEditor',
@@ -26,7 +27,7 @@ export default {
         positionMenu: true,
         selectTemplate(item) {
           if (typeof item === 'undefined') return null;
-          return `<span ${tagAttributes}>${item.original.value}</span>`;
+          return `<span ${tagAttributes}>${item.original.value}${deleteIcon}</span>`;
         },
       }
     },
@@ -60,7 +61,7 @@ export default {
       this.options.values.forEach((item) => {
         const { value, key, preview } = item;
         html = html.replace(
-          new RegExp(`<span ${tagAttributes}>${value}</span>`, 'g'), previewOutput ? preview : `%{${key}}`
+          new RegExp(`<span ${tagAttributes}>${value}${deleteIcon}</span>`, 'g'), previewOutput ? preview : `%{${key}}`
         );
       });
 
@@ -71,10 +72,13 @@ export default {
         this.options.values.forEach((item) => {
           const key = `%{${item.key}}`;
           const { value } = item;
-          content = content.replace(key, `<span ${tagAttributes}>${value}</span>`);
+          content = content.replace(key, `<span ${tagAttributes}>${value}${deleteIcon}</span>`);
         });
       }
       return content;
+    },
+    getTributeInstance() {
+      return this.tribute;
     },
   },
   render() {
