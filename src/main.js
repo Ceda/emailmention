@@ -8,6 +8,10 @@ Vue.config.productionTip = false
 
 import contenteditable from 'vue-contenteditable'
 
+import VuePdfEmbed from 'vue-pdf-embed/dist/vue2-pdf-embed';
+Vue.use(VuePdfEmbed)
+Vue.component('VuePdfEmbed', VuePdfEmbed)
+
 
 Vue.use(contenteditable)
 Vue.use(ElementUI);

@@ -1,5 +1,10 @@
 <template>
   <div id="app">
+    <VuePdfEmbed
+      ref="pdfViewer"
+      source="https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf"
+    />
+
     <div class="container">
       <div class="el-row">
         <div class="el-col el-col-24">
