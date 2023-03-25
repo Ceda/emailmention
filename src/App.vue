@@ -1,10 +1,5 @@
 <template>
   <div id="app">
-    <VuePdfEmbed
-      ref="pdfViewer"
-      source="https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf"
-    />
-
     <div class="container">
       <div class="el-row">
         <div class="el-col el-col-24">
@@ -41,9 +36,9 @@
           </TributeEditor>
         </div>
       </div>
-      <!-- <TagCloud
+      <TagCloud
         :tags="valueOptions"
-      /> -->
+      />
       <hr>
       <div>
         <button
@@ -94,13 +89,13 @@
 
 <script>
 import TributeEditor from './components/TributeEditor.vue';
-// import TagCloud from './components/TagCloud.vue';
+import TagCloud from './components/TagCloud.vue';
 
 export default {
   name: 'App',
   components: {
     TributeEditor,
-    // TagCloud,
+    TagCloud,
   },
   data: () => ({
     output: '',
