@@ -1,5 +1,5 @@
 <script>
-import Tribute from 'tributejs';
+import Tribute from 'tributejs/dist/tribute.js';
 const tagAttributes = 'contenteditable="false" class="el-tag el-tag--small el-tag--light"';
 const deleteIcon = '<i class="el-icon-close el-tag__close el-icon-close--small"></i>';
 

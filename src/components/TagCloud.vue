@@ -3,7 +3,7 @@
     <li
       v-for="tag in tags"
       :key="tag.key"
-      @mousedown="onClick"
+      @mousedown="onClick(tag, $event)"
     >
       <el-tooltip
         class="item"
@@ -28,9 +28,9 @@ export default {
   computed: {
   },
   methods: {
-    onClick() {
-      // const tag = e.target.innerText;
-      // this.$emit('click', e);
+    onClick(tag, event) {
+      console.log(arguments);
+      this.$emit('tag-selected', tag, event);
     }
   }
 };

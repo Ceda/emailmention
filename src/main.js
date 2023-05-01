@@ -16,6 +16,7 @@ Vue.component('VuePdfEmbed', VuePdfEmbed)
 Vue.use(contenteditable)
 Vue.use(ElementUI);
 
+
 new Vue({
   render: h => h(App),
 }).$mount('#app')

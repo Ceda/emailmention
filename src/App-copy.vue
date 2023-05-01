@@ -1,46 +1,39 @@
 <template>
   <div id="app">
-    <div class="el-col el-col-24">
-      <ContentWithTags
-        :content="settings.documentTitle"
-        :value-options="valueOptions"
-        class="el-input__inner"
-        @update-content="(value) => (settings.documentTitle = value)"
-      />
-    </div>
-    <div class="el-col el-col-24">
-      <ContentWithTags
-        :content="settings.documentBody"
-        :value-options="valueOptions"
-        class="el-textarea__inner el-textarea__inner--wrapped"
-        @update-content="(value) => (settings.documentBody = value)"
-      />
-    </div>
-
-    <!-- <div class="container">
+    <div class="container">
       <div class="el-row">
         <div class="el-col el-col-24">
-          <contenteditable
-            v-model="settings.documentTitle"
-            tag="div"
-            :contenteditable="true"
-            class="el-input__inner"
-            :no-h-t-m-l="false"
-            :no-n-l="true"
-          />
+          <TributeEditor
+            ref="subjecteditor"
+            :value-options="valueOptions"
+          >
+            <contenteditable
+              v-model="settings.documentTitle"
+              tag="div"
+              :contenteditable="true"
+              class="el-input__inner"
+              :no-h-t-m-l="true"
+              :no-n-l="true"
+            />
+          </TributeEditor>
         </div>
       </div>
       <div class="el-row">
         <div class="el-col el-col-24">
-          <contenteditable
-            v-model="settings.documentBody"
-            tag="div"
-            :contenteditable="true"
-            class="el-textarea__inner el-textarea__inner--wrapped"
-            :no-h-t-m-l="false"
-            :no-n-l="false"
-            @keydown.enter="onEnter"
-          />
+          <TributeEditor
+            ref="editor"
+            :value-options="valueOptions"
+          >
+            <contenteditable
+              v-model="settings.documentBody"
+              tag="div"
+              :contenteditable="true"
+              class="el-textarea__inner el-textarea__inner--wrapped"
+              :no-h-t-m-l="false"
+              :no-n-l="false"
+              @keydown.enter="onEnter"
+            />
+          </TributeEditor>
         </div>
       </div>
       <TagCloud
@@ -91,22 +84,22 @@
           v-html="output"
         />
       </div>
-    </div> -->
+    </div>
   </div>
 </template>
 
 <script>
-// import TagCloud from './components/TagCloud.vue';
-import TagItem from './components/TagItem.vue';
-import ContentWithTags from "./components/ContentWithTags.vue";
+import TributeEditor from './components/TributeEditor.vue';
+import TagCloud from './components/TagCloud.vue';
+
+const tagAttributes = 'contenteditable="false" class="el-tag el-tag--small el-tag--light"';
+const deleteIcon = '<i class="el-icon-close el-tag__close el-icon-close--small"></i>';
 
 export default {
   name: 'App',
   components: {
-    // TagCloud,
-    // eslint-disable-next-line vue/no-unused-components
-    TagItem,
-    ContentWithTags,
+    TributeEditor,
+    TagCloud,
   },
   data: () => ({
     output: '',
@@ -145,59 +138,52 @@ export default {
       },
     ],
   }),
-  // watch: {
-  //   'settings.documentBody': {
-  //     handler(newValue) {
-  //       this.settings.documentBody = this.replacePlaceholders(newValue);
-  //     },
-  //     immediate: true,
-  //   },
-  //   'settings.documentTitle': {
-  //     handler(newValue) {
-  //       this.settings.documentTitle = this.replacePlaceholders(newValue);
-  //     },
-  //     immediate: true,
-  //   },
-  // },
   methods: {
-    deleteTag() {
-    //   console.log('asdasd');
-    //   event.preventDefault();
-    //   event.stopPropagation();
-    //   const tagElement = event.target.parentElement;
-    //   const parentElement = tagElement.parentElement;
+    // handleTagClick(e) {
+    //   // console.log(tag);
+    //   const instance = this.$refs['editor'].getTributeInstance();
+    //   // instance.showMenuForCollection(this.$refs['editor'].$el,1)
+    //   const item = {
+    //     index: 0,
+    //     scoere: 0,
+    //     string: 'celkem',
+    //     original: {
+    //     key: 'total',
+    //     value: 'celkem',
+    //     preview: '5 000 Kč'
+    //     }
+    //    };
+    //   const content = instance.collection[0].selectTemplate(item);
+    //   instance.replaceText(content, e, item)
 
-    //   // Remove the tag HTML from the content
-    //   parentElement.removeChild(tagElement);
 
-    //   // Update the settings.documentBody and settings.documentTitle accordingly
-    //   this.settings.documentBody = parentElement.innerHTML;
-    //   this.settings.documentTitle = parentElement.innerHTML;
+    //   // instance.selectItemAtIndex(1, e)
+    //   // instance.insertTextAtCursor('asdasd')
     // },
-    // replacePlaceholders(content) {
-    //   let replacedContent = content;
-
-    //   this.valueOptions.forEach((option) => {
-    //     const tagHtml = `<tag-item @delete="deleteTag">${option.value}</tag-item>`;
-    //     const placeholder = `%{${option.key}}`;
-
-    //     replacedContent = replacedContent.split(placeholder).join(tagHtml);
-    //   });
-
-    //   return replacedContent;
-    },
-    handleTagClick() {
-    },
     onEnter() {
+      // event.preventDefault()
+      // document.execCommand('insertLineBreak')
     },
-    onTagSelected() {
-    },
+    onTagSelected(tag) {
+
+      const instance = this.$refs['editor'].getTributeInstance();
+      const content =  `<span ${tagAttributes}>${tag.value}${deleteIcon}</span>`;
+
+      instance.insertTextAtCursor(content)
+
+},
+
     getData() {
+      this.output = this.$refs['editor'].dataFromTribute();
+      this.subjectOutput = this.$refs['subjecteditor'].dataFromTribute();
     },
     getPreview() {
+      this.preview = this.$refs['editor'].dataFromTribute({ previewOutput: true });
+      this.subjectPreview = this.$refs['subjecteditor'].dataFromTribute({ previewOutput: true });
     },
   }
 };
+
 </script>
 
 <style>
