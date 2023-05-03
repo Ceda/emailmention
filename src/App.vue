@@ -1,29 +1,19 @@
 <template>
   <div id="app">
     <div class="container">
-      <Editor
-        ref="titleEditor"
-        v-model="settings.documentTitle"
-        :value-options="valueOptions"
-        class="el-textarea__inner el-textarea__inner--wrapped"
-      />
+      <div class="editor-content">
+        <Editor
+          ref="titleEditor"
+          v-model="settings.documentTitle"
+          :value-options="valueOptions"
+        />
 
-      <TagCloud
-        :tags="valueOptions"
-        @tag-selected="onTagSelected('titleEditor', $event)"
-      />
-
-      <Editor
-        ref="editor"
-        v-model="settings.documentBody"
-        :value-options="valueOptions"
-        class="el-textarea__inner el-textarea__inner--wrapped"
-      />
-
-      <TagCloud
-        :tags="valueOptions"
-        @tag-selected="onTagSelected('editor', $event)"
-      />
+        <Editor
+          ref="editor"
+          v-model="settings.documentBody"
+          :value-options="valueOptions"
+        />
+      </div>
 
       <div>
         <button
@@ -68,20 +58,16 @@
           v-html="output"
         />
       </div>
-
-
     </div>
   </div>
 </template>
 
 <script>
-import TagCloud from './components/TagCloud.vue';
 import Editor from './components/Editor.vue';
 
 export default {
   name: 'App',
   components: {
-    TagCloud,
     Editor
   },
   data: () => ({
@@ -123,9 +109,6 @@ export default {
     savedSelection: null
   }),
   methods: {
-    onTagSelected(element, tag) {
-      this.$refs[element].insertTag(tag.key);
-    },
     getData() {
       this.output = this.$refs['editor'].getContentWithPlaceholders();
       this.subjectOutput = this.$refs['titleEditor'].getContentWithPlaceholders();
@@ -168,4 +151,11 @@ export default {
     padding-left: 2.66667rem;
     padding-right: 2.66667rem;
 }
+</style>
+
+<style lang="scss">
+  .editor-content {
+    position: relative;
+    padding-right: 120px;
+  }
 </style>

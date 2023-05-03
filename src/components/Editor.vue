@@ -1,22 +1,37 @@
 <template>
-  <component
-    :is="tag"
-    ref="element"
-    :contenteditable="contenteditable"
-    @input="onInput"
-    @blur="saveSelection"
-    @focus="restoreSelection"
-    @click="onClick"
-    @contextmenu.prevent
-    @copy.prevent
-    @cut.prevent
-    @paste.prevent
-  />
+  <div>
+    <component
+      :is="tag"
+      ref="element"
+      :contenteditable="contenteditable"
+      @input="onInput"
+      @blur="onBlur"
+      @focus="onFocus"
+      @click="onClick"
+      @contextmenu.prevent
+      @copy.prevent
+      @cut.prevent
+      @paste.prevent
+       class="el-textarea__inner el-textarea__inner--wrapped"
+
+    />
+    <TagCloud
+      v-show="isFocused"
+      :tags="valueOptions"
+      @tag-selected="onTagSelected"
+      class="tag-cloud"
+    />
+  </div>
 </template>
 
 <script>
+import TagCloud from './TagCloud.vue';
+
 export default {
   name: "ContentEditableEditor",
+  components: {
+    TagCloud
+  },
   props: {
     tag: {
       type: String,
@@ -45,6 +60,12 @@ export default {
       },
     },
   },
+  data() {
+    return {
+      isFocused: false,
+      blurTimeout: null
+    }
+  },
   mounted() {
     this.$refs.element.innerHTML = this.replacePlaceholders(this.value);
   },
@@ -56,6 +77,9 @@ export default {
     },
   },
   methods: {
+    onTagSelected(tag) {
+      this.insertTag(tag.key);
+    },
     currentContent(){
       return this.noHTML ? this.$refs.element.innerText : this.$refs.element.innerHTML;
     },
@@ -86,14 +110,20 @@ export default {
         return restoredContent.split(tagHtml).join(placeholder);
       }, this.currentContent());
     },
-    saveSelection() {
-      console.log('blured');
+    onBlur() {
+      this.blurTimeoutId = setTimeout(() => {
+        this.isFocused = false
+      }, 1)
+
       const sel = window.getSelection();
       if (sel.rangeCount > 0) {
         this.savedSelection = sel.getRangeAt(0);
       }
     },
-    restoreSelection() {
+    onFocus() {
+      clearTimeout(this.blurTimeoutId)
+      this.isFocused = true
+
       if (this.savedSelection) {
         const sel = window.getSelection();
         sel.removeAllRanges();
@@ -121,3 +151,9 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+  .tag-cloud {
+    position: absolute;
+  }
+</style>

@@ -6,7 +6,8 @@
       @mousedown="onClick(tag, $event)"
     >
       <el-tooltip
-        class="item"
+        popper-class="tooltip-multiline"
+        placement="right"
         :content="tag.preview"
       >
         <span class="el-tag el-tag--small el-tag--light">{{ tag.value }}</span>
@@ -39,12 +40,20 @@ export default {
   ul {
     list-style: none;
     padding: 0;
-    margin: 10px 0;
-    display: flex;
+    margin: 0 0;
+    right: 0;
+    top: 0;
   }
 
   li {
-    margin-right: 5px;
+    margin: 5px;
     cursor: pointer;
   }
+</style>
+
+<style lang="scss">
+  .tooltip-multiline {
+    white-space: break-spaces;
+  }
+
 </style>
