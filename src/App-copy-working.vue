@@ -1,45 +1,28 @@
 <template>
   <div id="app">
     <div class="container">
-      <div class="el-row">
-        <div class="el-col el-col-24">
-          <TributeEditor
-            ref="subjecteditor"
-            :value-options="valueOptions"
-          >
-            <contenteditable
-              v-model="settings.documentTitle"
-              tag="div"
-              :contenteditable="true"
-              class="el-input__inner"
-              :no-h-t-m-l="true"
-              :no-n-l="true"
-            />
-          </TributeEditor>
-        </div>
+      <div class="el-col el-col-24">
+        <ContentWithTags
+          ref="subjecteditor"
+          v-model="settings.documentTitle"
+          :value-options="valueOptions"
+          class="el-input__inner"
+        />
       </div>
-      <div class="el-row">
-        <div class="el-col el-col-24">
-          <TributeEditor
-            ref="editor"
-            :value-options="valueOptions"
-          >
-            <contenteditable
-              v-model="settings.documentBody"
-              tag="div"
-              :contenteditable="true"
-              class="el-textarea__inner el-textarea__inner--wrapped"
-              :no-h-t-m-l="false"
-              :no-n-l="false"
-              @keydown.enter="onEnter"
-            />
-          </TributeEditor>
-        </div>
+      <div class="el-col el-col-24">
+        <ContentWithTags
+          ref="editor"
+          v-model="settings.documentBody"
+          :value-options="valueOptions"
+          class="el-textarea__inner el-textarea__inner--wrapped"
+        />
       </div>
+
       <TagCloud
         :tags="valueOptions"
         @tag-selected="onTagSelected"
       />
+
       <hr>
       <div>
         <button
@@ -57,7 +40,6 @@
       </div>
       <div v-if="preview">
         <hr>
-
         <label for="">Subject Preview</label>
         <div
           class="preview"
@@ -89,17 +71,14 @@
 </template>
 
 <script>
-import TributeEditor from './components/TributeEditor.vue';
 import TagCloud from './components/TagCloud.vue';
-
-const tagAttributes = 'contenteditable="false" class="el-tag el-tag--small el-tag--light"';
-const deleteIcon = '<i class="el-icon-close el-tag__close el-icon-close--small"></i>';
+import ContentWithTags from "./components/ContentWithTags.vue";
 
 export default {
   name: 'App',
   components: {
-    TributeEditor,
     TagCloud,
+    ContentWithTags,
   },
   data: () => ({
     output: '',
@@ -139,43 +118,30 @@ export default {
     ],
   }),
   methods: {
-    // handleTagClick(e) {
-    //   // console.log(tag);
-    //   const instance = this.$refs['editor'].getTributeInstance();
-    //   // instance.showMenuForCollection(this.$refs['editor'].$el,1)
-    //   const item = {
-    //     index: 0,
-    //     scoere: 0,
-    //     string: 'celkem',
-    //     original: {
-    //     key: 'total',
-    //     value: 'celkem',
-    //     preview: '5 000 Kč'
-    //     }
-    //    };
-    //   const content = instance.collection[0].selectTemplate(item);
-    //   instance.replaceText(content, e, item)
+    deleteTag() {
 
+    },
+    handleTagClick() {
 
-    //   // instance.selectItemAtIndex(1, e)
-    //   // instance.insertTextAtCursor('asdasd')
-    // },
+    },
     onEnter() {
-      // event.preventDefault()
-      // document.execCommand('insertLineBreak')
-    },
-    onTagSelected(tag) {
-
-      const instance = this.$refs['editor'].getTributeInstance();
-      const content =  `<span ${tagAttributes}>${tag.value}${deleteIcon}</span>`;
-
-      instance.insertTextAtCursor(content)
 
     },
+    onTagSelected() {
+      // console.log(tag, event);
 
+      console.log(document.activeElement);
+      const sel = window.getSelection();
+      console.log(sel);
+
+      const el = this.$refs['editor'].$el
+      el.focus();
+
+
+    },
     getData() {
-      this.output = this.$refs['editor'].dataFromTribute();
-      this.subjectOutput = this.$refs['subjecteditor'].dataFromTribute();
+      this.output = this.$refs['editor'].restorePlaceholders();
+      this.subjectOutput = this.$refs['subjecteditor'].restorePlaceholders();
     },
     getPreview() {
       this.preview = this.$refs['editor'].dataFromTribute({ previewOutput: true });
@@ -183,7 +149,6 @@ export default {
     },
   }
 };
-
 </script>
 
 <style>

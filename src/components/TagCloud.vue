@@ -9,7 +9,7 @@
         class="item"
         :content="tag.preview"
       >
-        <span>{{ tag.value }}</span>
+        <span class="el-tag el-tag--small el-tag--light">{{ tag.value }}</span>
       </el-tooltip>
     </li>
   </ul>
@@ -28,9 +28,8 @@ export default {
   computed: {
   },
   methods: {
-    onClick(tag, event) {
-      console.log(arguments);
-      this.$emit('tag-selected', tag, event);
+    onClick(tag) {
+      this.$emit('tag-selected', tag);
     }
   }
 };
@@ -45,10 +44,7 @@ export default {
   }
 
   li {
-    margin: 5px;
-    padding: 5px;
-    background-color: #eee;
-    border-radius: 5px;
+    margin-right: 5px;
     cursor: pointer;
   }
 </style>

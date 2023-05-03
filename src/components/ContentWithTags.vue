@@ -1,9 +1,13 @@
 <template>
-  <div
-    ref="contentEditable"
-    :contenteditable="true"
-    class="content-with-tags"
-    @input="onInput"
+  <component
+    :is="tag"
+    ref="element"
+    :contenteditable="contenteditable"
+    @input="update"
+    @blur="update"
+    @paste="onPaste"
+    @keypress="onKeypress"
+    v-on="eventHandlers"
     @click="onClick"
   />
 </template>
@@ -11,74 +15,137 @@
 <script>
 export default {
   name: "ContentWithTags",
-  props: ["content", "valueOptions"],
-  mounted() {
-    this.initMutationObserver();
-    this.updateInnerContent();
+  props : {
+    tag: {
+      type: String,
+      default: 'div'
+    },
+    contenteditable: {
+      type : Boolean,
+      default : true,
+    },
+    value: {
+      type: String,
+      default: ''
+    },
+    noHTML: {
+      type : Boolean,
+      default : false,
+    },
+    noNL: {
+      type : Boolean,
+      default : false,
+    },
+    valueOptions: {
+      type: Array,
+      default: function() {
+        return [];
+      }
+    }
   },
-  beforeDestroy() {
-    this.mutationObserver.disconnect();
+  computed: {
+    eventHandlers() {
+      const eventNames = [
+        'keydown',
+        'keyup',
+        'mouseenter',
+        'mouseover',
+        'mousemove',
+        'mousedown',
+        'mouseup',
+        'auxclick',
+        'dblclick',
+        'contextmenu',
+        'wheel',
+        'mouseleave',
+        'mouseout',
+        'select',
+        'pointerlockchange',
+        'pointerlockerror',
+        'dragstart',
+        'drag',
+        'dragend',
+        'dragenter',
+        'dragover',
+        'dragleave',
+        'drop',
+        'transitionstart',
+        'transitioncancel',
+        'transitionend',
+        'transitionrun',
+        'compositionstart',
+        'compositionupdate',
+        'compositionend',
+        'cut',
+        'copy',
+      ];
+      return Object.fromEntries(
+        eventNames.map((eventName) => [eventName, this.fwdEv])
+      );
+    },
+  },
+  mounted() {
+    this.updateContent(this.value);
   },
   methods: {
-    initMutationObserver() {
-      this.mutationObserver = new MutationObserver(() => {
-        this.$emit("update-content", this.restorePlaceholders(this.$refs.contentEditable.innerHTML));
-      });
-
-      this.mutationObserver.observe(this.$refs.contentEditable, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-      });
+    currentContent(){
+      return this.noHTML ? this.$refs.element.innerText : this.$refs.element.innerHTML;
     },
-    onInput(event) {
-      if (event.inputType === "insertText" && event.data === "}") {
-        this.$nextTick(() => {
-          const savedSelection = this.saveSelection();
-          this.updateInnerContent();
-          this.restoreSelection(savedSelection);
-          this.$emit("update-content", this.restorePlaceholders(this.$refs.contentEditable.innerHTML));
-        });
+    updateContent(newcontent){
+      this.$refs.element[this.noHTML ? 'innerText' : 'innerHTML'] = this.replacePlaceholders(newcontent);
+    },
+    update() {
+      this.$emit('input', this.currentContent());
+    },
+    onPaste(event) {
+      event.preventDefault();
+      const clipboardData = (event.originalEvent || event).clipboardData;
+      let text = clipboardData.getData('text/plain');
+
+      if (this.noNL) {
+        text = text.replace(/\r\n|\n|\r/g, ' ');
       }
+
+      window.document.execCommand('insertText', false, text);
+      this.fwdEv(event);
+    },
+    onKeypress(event) {
+      if (event.key === 'Enter' && this.noNL) {
+        event.preventDefault();
+        this.$emit('returned', this.currentContent);
+      }
+      this.fwdEv(event);
+    },
+    fwdEv(event){
+      this.$emit(event.type, event);
+    },
+    onInput() {
     },
     onClick(event) {
       if (event.target.classList.contains("el-icon-close--small")) {
         const tagElement = event.target.parentElement;
         tagElement.outerHTML = '';
-        this.$emit("update-content", this.restorePlaceholders(this.$refs.contentEditable.innerHTML));
       }
-    },
-    updateInnerContent() {
-      this.$refs.contentEditable.innerHTML = this.replacePlaceholders(this.content);
     },
     replacePlaceholders(content) {
       return this.valueOptions.reduce((replacedContent, option) => {
-        const tagHtml = `<span class="el-tag el-tag--small el-tag--light">${option.preview}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
+        const tagHtml = `<span class="el-tag el-tag--small el-tag--light">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
         const placeholder = `%{${option.key}}`;
-        return replacedContent.split(placeholder).join(tagHtml);
+        const placeholderIndex = replacedContent.indexOf(placeholder);
+
+        if (placeholderIndex === -1) {
+          return replacedContent;
+        }
+
+        return replacedContent.slice(0, placeholderIndex) + tagHtml + replacedContent.slice(placeholderIndex + placeholder.length);
       }, content);
     },
-    restorePlaceholders(content) {
+    restorePlaceholders() {
       return this.valueOptions.reduce((restoredContent, option) => {
-        const tagHtml = `<span class="el-tag el-tag--small el-tag--light">${option.preview}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
+        const tagHtml = `<span class="el-tag el-tag--small el-tag--light">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
         const placeholder = `%{${option.key}}`;
         return restoredContent.split(tagHtml).join(placeholder);
-      }, content);
-    },
-    saveSelection() {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        return range.cloneRange();
-      }
-      return null;
-    },
-    restoreSelection(savedSelection) {
-      if (savedSelection) {
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(savedSelection);
-      }
+      }, this.currentContent());
     },
   },
 };

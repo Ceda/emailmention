@@ -1,118 +1,44 @@
 <template>
   <div id="app">
-    <div class="el-col el-col-24">
-      <ContentWithTags
-        :content="settings.documentTitle"
-        :value-options="valueOptions"
-        class="el-input__inner"
-        @update-content="(value) => (settings.documentTitle = value)"
-      />
-    </div>
-    <div class="el-col el-col-24">
-      <ContentWithTags
-        :content="settings.documentBody"
+    <div class="container">
+      <Editor
+        ref="titleEditor"
+        v-model="settings.documentTitle"
         :value-options="valueOptions"
         class="el-textarea__inner el-textarea__inner--wrapped"
-        @update-content="(value) => (settings.documentBody = value)"
       />
-    </div>
 
-    <!-- <div class="container">
-      <div class="el-row">
-        <div class="el-col el-col-24">
-          <contenteditable
-            v-model="settings.documentTitle"
-            tag="div"
-            :contenteditable="true"
-            class="el-input__inner"
-            :no-h-t-m-l="false"
-            :no-n-l="true"
-          />
-        </div>
-      </div>
-      <div class="el-row">
-        <div class="el-col el-col-24">
-          <contenteditable
-            v-model="settings.documentBody"
-            tag="div"
-            :contenteditable="true"
-            class="el-textarea__inner el-textarea__inner--wrapped"
-            :no-h-t-m-l="false"
-            :no-n-l="false"
-            @keydown.enter="onEnter"
-          />
-        </div>
-      </div>
       <TagCloud
         :tags="valueOptions"
-        @tag-selected="onTagSelected"
+        @tag-selected="onTagSelected('titleEditor', $event)"
       />
-      <hr>
-      <div>
-        <button
-          class="el-button el-button--primary"
-          @click="getData"
-        >
-          Získat data
-        </button>
-        <button
-          class="el-button el-button--primary"
-          @click="getPreview"
-        >
-          Získat náhled
-        </button>
-      </div>
-      <div v-if="preview">
-        <hr>
 
-        <label for="">Subject Preview</label>
-        <div
-          class="preview"
-          v-html="subjectPreview"
-        />
-        <label for="">Body Preview</label>
-        <div
-          class="preview"
-          v-html="preview"
-        />
-      </div>
-      <div v-if="output">
-        <hr>
+      <Editor
+        ref="editor"
+        v-model="settings.documentBody"
+        :value-options="valueOptions"
+        class="el-textarea__inner el-textarea__inner--wrapped"
+      />
 
-        <textarea
-          cols="100"
-          rows="2"
-          v-html="subjectOutput"
-        />
-
-        <textarea
-          cols="100"
-          rows="10"
-          v-html="output"
-        />
-      </div>
-    </div> -->
+      <TagCloud
+        :tags="valueOptions"
+        @tag-selected="onTagSelected('editor', $event)"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-// import TagCloud from './components/TagCloud.vue';
-import TagItem from './components/TagItem.vue';
-import ContentWithTags from "./components/ContentWithTags.vue";
+import TagCloud from './components/TagCloud.vue';
+import Editor from './components/Editor.vue';
 
 export default {
   name: 'App',
   components: {
-    // TagCloud,
-    // eslint-disable-next-line vue/no-unused-components
-    TagItem,
-    ContentWithTags,
+    TagCloud,
+    Editor
   },
   data: () => ({
-    output: '',
-    preview: '',
-    subjectPreview: '',
-    subjectOutput: '',
     settings: {
       documentBody: "Dobrý den,\n\nV příloze tohoto e-mailu naleznete novou fakturu č. %{number} v hodnotě %{total}.\nJejí splatnost je za %{due_in}, tedy do %{due_on}.\n\nJako forma úhrady byl zvolen bankovní převod, všechny důležité údaje k platbě naleznete níže:\n\n%{payment_data}\n\nV případě dotazů mě neváhejte kontaktovat.\n\nS pozdravem,\n\nTonda Pleskac\n",
       documentTitle: `Nová faktura č. %{number} se splatností %{due_on}.`
@@ -144,59 +70,13 @@ export default {
         preview: '5 000 Kč'
       },
     ],
+    savedSelection: null
   }),
-  // watch: {
-  //   'settings.documentBody': {
-  //     handler(newValue) {
-  //       this.settings.documentBody = this.replacePlaceholders(newValue);
-  //     },
-  //     immediate: true,
-  //   },
-  //   'settings.documentTitle': {
-  //     handler(newValue) {
-  //       this.settings.documentTitle = this.replacePlaceholders(newValue);
-  //     },
-  //     immediate: true,
-  //   },
-  // },
   methods: {
-    deleteTag() {
-    //   console.log('asdasd');
-    //   event.preventDefault();
-    //   event.stopPropagation();
-    //   const tagElement = event.target.parentElement;
-    //   const parentElement = tagElement.parentElement;
-
-    //   // Remove the tag HTML from the content
-    //   parentElement.removeChild(tagElement);
-
-    //   // Update the settings.documentBody and settings.documentTitle accordingly
-    //   this.settings.documentBody = parentElement.innerHTML;
-    //   this.settings.documentTitle = parentElement.innerHTML;
-    // },
-    // replacePlaceholders(content) {
-    //   let replacedContent = content;
-
-    //   this.valueOptions.forEach((option) => {
-    //     const tagHtml = `<tag-item @delete="deleteTag">${option.value}</tag-item>`;
-    //     const placeholder = `%{${option.key}}`;
-
-    //     replacedContent = replacedContent.split(placeholder).join(tagHtml);
-    //   });
-
-    //   return replacedContent;
+    onTagSelected(element, tag) {
+      this.$refs[element].insertTag(tag.key);
     },
-    handleTagClick() {
-    },
-    onEnter() {
-    },
-    onTagSelected() {
-    },
-    getData() {
-    },
-    getPreview() {
-    },
-  }
+  },
 };
 </script>
 
