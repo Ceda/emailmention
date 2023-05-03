@@ -24,6 +24,52 @@
         :tags="valueOptions"
         @tag-selected="onTagSelected('editor', $event)"
       />
+
+      <div>
+        <button
+          class="el-button el-button--primary"
+          @click="getData"
+        >
+          Získat data
+        </button>
+        <button
+          class="el-button el-button--primary"
+          @click="getPreview"
+        >
+          Získat náhled
+        </button>
+      </div>
+
+      <div v-if="preview">
+        <hr>
+        <label for="">Subject Preview</label>
+        <div
+          class="preview"
+          v-html="subjectPreview"
+        />
+        <label for="">Body Preview</label>
+        <div
+          class="preview"
+          v-html="preview"
+        />
+      </div>
+      <div v-if="output">
+        <hr>
+
+        <textarea
+          cols="100"
+          rows="2"
+          v-html="subjectOutput"
+        />
+
+        <textarea
+          cols="100"
+          rows="10"
+          v-html="output"
+        />
+      </div>
+
+
     </div>
   </div>
 </template>
@@ -39,6 +85,10 @@ export default {
     Editor
   },
   data: () => ({
+    output: '',
+    preview: '',
+    subjectPreview: '',
+    subjectOutput: '',
     settings: {
       documentBody: "Dobrý den,\n\nV příloze tohoto e-mailu naleznete novou fakturu č. %{number} v hodnotě %{total}.\nJejí splatnost je za %{due_in}, tedy do %{due_on}.\n\nJako forma úhrady byl zvolen bankovní převod, všechny důležité údaje k platbě naleznete níže:\n\n%{payment_data}\n\nV případě dotazů mě neváhejte kontaktovat.\n\nS pozdravem,\n\nTonda Pleskac\n",
       documentTitle: `Nová faktura č. %{number} se splatností %{due_on}.`
@@ -76,7 +126,22 @@ export default {
     onTagSelected(element, tag) {
       this.$refs[element].insertTag(tag.key);
     },
+    getData() {
+      this.output = this.$refs['editor'].getContentWithPlaceholders();
+      this.subjectOutput = this.$refs['titleEditor'].getContentWithPlaceholders();
+    },
+    getPreview() {
+      this.preview = this.$refs['editor'].getContentWithPreview();
+      this.subjectPreview = this.$refs['titleEditor'].getContentWithPreview();
+    },
   },
+  mounted() {
+    document.onkeydown = function(e) {
+      if ((e.ctrlKey || e.metaKey) && (e.keyCode == 90 || e.keyCode == 89)) {
+        e.preventDefault();
+      }
+    };
+  }
 };
 </script>
 

@@ -7,6 +7,10 @@
     @blur="saveSelection"
     @focus="restoreSelection"
     @click="onClick"
+    @contextmenu.prevent
+    @copy.prevent
+    @cut.prevent
+    @paste.prevent
   />
 </template>
 
@@ -52,6 +56,9 @@ export default {
     },
   },
   methods: {
+    currentContent(){
+      return this.noHTML ? this.$refs.element.innerText : this.$refs.element.innerHTML;
+    },
     replacePlaceholders(content) {
       return this.valueOptions.reduce((replacedContent, option) => {
         const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
@@ -65,10 +72,17 @@ export default {
         return replacedContent.slice(0, placeholderIndex) + tagHtml + replacedContent.slice(placeholderIndex + placeholder.length);
       }, content);
     },
-    restorePlaceholders() {
+    getContentWithPlaceholders() {
       return this.valueOptions.reduce((restoredContent, option) => {
         const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
         const placeholder = `%{${option.key}}`;
+        return restoredContent.split(tagHtml).join(placeholder);
+      }, this.currentContent());
+    },
+    getContentWithPreview() {
+      return this.valueOptions.reduce((restoredContent, option) => {
+        const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
+        const placeholder = option.preview;
         return restoredContent.split(tagHtml).join(placeholder);
       }, this.currentContent());
     },
