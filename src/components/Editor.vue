@@ -5,15 +5,16 @@
       ref="element"
       :contenteditable="contenteditable"
       @input="onInput"
-      @blur="onBlur"
-      @focus="onFocus"
+      @mouseup="capturePosition"
+      @keyup="capturePosition"
+      @blur.passive="onBlur"
+      @focus.passive="onFocus"
       @click="onClick"
       @contextmenu.prevent
       @copy.prevent
       @cut.prevent
       @paste.prevent
        class="el-textarea__inner el-textarea__inner--wrapped"
-
     />
     <TagCloud
       v-show="isFocused"
@@ -85,7 +86,7 @@ export default {
     },
     replacePlaceholders(content) {
       return this.valueOptions.reduce((replacedContent, option) => {
-        const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
+        const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small"></i></span>`;
         const placeholder = `%{${option.key}}`;
         const placeholderIndex = replacedContent.indexOf(placeholder);
 
@@ -98,14 +99,14 @@ export default {
     },
     getContentWithPlaceholders() {
       return this.valueOptions.reduce((restoredContent, option) => {
-        const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
+        const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small"></i></span>`;
         const placeholder = `%{${option.key}}`;
         return restoredContent.split(tagHtml).join(placeholder);
       }, this.currentContent());
     },
     getContentWithPreview() {
       return this.valueOptions.reduce((restoredContent, option) => {
-        const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small" data-key="${option.key}"></i></span>`;
+        const tagHtml = `<span class="el-tag el-tag--small el-tag--light" contenteditable="false">${option.value}<i class="el-icon-close el-tag__close el-icon-close--small"></i></span>`;
         const placeholder = option.preview;
         return restoredContent.split(tagHtml).join(placeholder);
       }, this.currentContent());
@@ -114,11 +115,6 @@ export default {
       this.blurTimeoutId = setTimeout(() => {
         this.isFocused = false
       }, 1)
-
-      const sel = window.getSelection();
-      if (sel.rangeCount > 0) {
-        this.savedSelection = sel.getRangeAt(0);
-      }
     },
     onFocus() {
       clearTimeout(this.blurTimeoutId)
@@ -133,13 +129,45 @@ export default {
     insertTag(tag) {
       setTimeout(() => {
         this.$refs.element.focus();
-        document.execCommand('insertHTML', false, `${this.replacePlaceholders(`%{${tag}}`)} `);
-        document.execCommand("delete", false, null);
+
+        const tagHtml = this.replacePlaceholders(`%{${tag}}`);
+        const sel = window.getSelection();
+
+        if (sel.rangeCount) {
+          const range = sel.getRangeAt(0);
+          range.deleteContents();
+
+          const el = document.createElement("div");
+          el.innerHTML = ` ${tagHtml} `;
+          const frag = document.createDocumentFragment();
+          let node;
+          let lastNode;
+
+          while ((node = el.firstChild)) {
+            lastNode = frag.appendChild(node);
+          }
+
+          range.insertNode(frag);
+
+          // Preserve the selection
+          if (lastNode) {
+            range.setStartAfter(lastNode);
+            range.setEndAfter(lastNode);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+        }
       }, 0);
     },
-
+    capturePosition() {
+      const sel = window.getSelection();
+      if (sel.rangeCount > 0) {
+        this.savedSelection = sel.getRangeAt(0);
+      }
+    },
     onInput() {
       let newVal = this.$refs.element.innerHTML;
+      this.capturePosition();
       this.$emit('input', newVal);
     },
     onClick(event) {
